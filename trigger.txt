@@ -1,0 +1,164 @@
+select *  from college_student;
+
+select * from college_audit;
+
+drop table college_audit;
+
+create table college_audit (id integer,name char(25),age int );
+-------------------------------------------------------
+-----AFTER INSERT Function ----------
+create or replace function afterinsert()
+returns trigger
+as $$
+begin 
+insert into college_audit (id,name,age) values (new.id,new.name,new.age);
+return new;
+end;
+$$
+language 'plpgsql'
+--------------------------------------------------------
+___________________________________________
+
+------AFTER TRIGGER-------------------------
+
+create or replace trigger afterinsertcollegestudent
+after insert
+on college_student
+for each row 
+execute function afterinsert();
+_____________________________________________
+
+insert into college_student values(5,'ghwgf',27);
+
+---------------------------------------------------------
+------UPDATE TRIGGER-------------------------
+
+create or replace trigger beforeupdatecollegestudent
+before update
+on college_student
+for each row 
+execute function beforeupdate();
+------------------------------------------------------------
+---------------------------------------------------------------
+-----BEFORE UPDATE Function ----------
+create or replace function beforeupdate()
+returns trigger
+as $$
+begin 
+insert into college_audit (id,name,age) values (old.id,old.name,old.age);
+return new;
+end;
+$$
+language 'plpgsql'
+
+update college_student set name='rahul' where id=4;
+----------------------------------------------------------------
+
+-------------DELETE FUNCTION--------
+
+create or replace function beforedelete()
+returns trigger
+as $$
+begin 
+insert into college_audit (id,name,age) values (old.id,old.name,old.age);
+return new;
+end;
+$$
+language 'plpgsql'
+
+----------------------------------------------------
+--------BEFORE DELETE-----------------
+
+create or replace trigger beforedeletecollegestudent
+after delete
+on college_student
+for each row 
+execute function beforedelete();
+------------------------------------
+
+delete from college_student where id=3;
+
+select * from college_student;
+
+
+
+---NOTE:- update = both (old and new) values
+--------- delete = old values () and always delete new value  = null value 
+--------- insert = new values and always insert old value  = null value
+
+
+---------------------------------------------------------------------------------------------------------------
+
+
+-------------------------PROCEDURE-------------------------------------------------------------
+
+create or replace procedure proc_insert(id int, name char(20), age int)
+language 'plpgsql'
+as $$
+begin
+insert into college_student values(id,name,age);
+end;
+$$
+
+call proc_insert(7,'virat',32)
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------FUNCTION------------------------------------------------------------------------------------------------
+
+create or replace function hi_lo(a int,b int,c int,out high int,out low int)
+as $$
+begin 
+high=greatest(a,b,c);
+low= least(a,b,c);
+end;
+$$
+language 'plpgsql'
+
+select hi_lo(5,10,15)
+
+-----------------------------------------------------------------------------------------------
+create or replace function hi_lo(a int,b int,c int,out ab int)
+as $$
+begin 
+ab=sum(a,b,c);
+end;
+$$
+language 'plpgsql'                         
+
+---------------------------------------------------------------------------------------------------
+create or replace function hi_lo(inout a int)
+as $$
+begin 
+a=a*a;
+end;
+$$
+language 'plpgsql'
+
+select hi_lo(2) 
+--------------------------------------------------------------
+create or replace function num3(a int,b int)
+returns integer
+as $$
+declare
+c int;
+begin
+c=a+b;
+return c;
+end;
+$$
+language 'plpgsql'
+
+select num3(10,20)
+
+--------------------------------------------------------------------------
+create or replace function num8()
+returns table (first_name varchar,creditlimit numeric)
+as $$
+begin
+return query select customers.first_name,customers.creditlimit from public.customers;
+end;
+$$
+language plpgsql;
+
+
